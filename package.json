@@ -1,6 +1,6 @@
 {
   "name": "assignnexus-website",
-  "homepage": "https://aritra1243.github.io/assignnexus",
+  "homepage": "https://aritra1243.github.io/assignnexus/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
