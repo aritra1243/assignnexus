@@ -544,7 +544,45 @@ function App() {
     </div>
   );
 
-  const ContactPage = () => (
+  const ContactPage = () => {
+    const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+    const [formStatus, setFormStatus] = useState('idle'); // idle, sending, success, error
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setFormStatus('sending');
+
+      try {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: '44ce9a2d-822b-491c-8dbf-018d67d5b8ff',
+            from_name: 'AssignNexus Website',
+            subject: formData.subject || 'New Contact Form Submission',
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+          }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          setFormStatus('success');
+          setFormData({ name: '', email: '', subject: '', message: '' });
+        } else {
+          setFormStatus('error');
+        }
+      } catch (err) {
+        setFormStatus('error');
+      }
+    };
+
+    return (
     <div className="py-20 bg-gradient-to-br from-indigo-50 to-purple-50 animate-fadeIn">
       <div className="container mx-auto px-4">
         <div className="max-w-5xl mx-auto">
@@ -557,11 +595,28 @@ function App() {
             {/* Contact Form */}
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">Send us a Message</h2>
-              <form className="space-y-4">
+
+              {formStatus === 'success' && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <p className="text-green-700 font-medium">Message sent successfully! We'll get back to you soon.</p>
+                </div>
+              )}
+              {formStatus === 'error' && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 font-medium">Something went wrong. Please try again or email us directly.</p>
+                </div>
+              )}
+
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">Name</label>
                   <input 
                     type="text" 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Your full name"
                   />
@@ -570,6 +625,10 @@ function App() {
                   <label className="block text-gray-700 font-semibold mb-2">Email</label>
                   <input 
                     type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="your@email.com"
                   />
@@ -578,6 +637,10 @@ function App() {
                   <label className="block text-gray-700 font-semibold mb-2">Subject</label>
                   <input 
                     type="text" 
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="What is this regarding?"
                   />
@@ -586,15 +649,20 @@ function App() {
                   <label className="block text-gray-700 font-semibold mb-2">Message</label>
                   <textarea 
                     rows="4" 
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Tell us how we can help..."
                   ></textarea>
                 </div>
                 <button 
                   type="submit"
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                  disabled={formStatus === 'sending'}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  Send Message
+                  {formStatus === 'sending' ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -610,8 +678,8 @@ function App() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">Email Us</h3>
-                      <p className="text-gray-600">support@assignnexus.com</p>
-                      <p className="text-gray-600">info@assignnexus.com</p>
+                      <p className="text-gray-600">assignnexus@gmail.com</p>
+                      <p className="text-gray-600">info.assignnexus@gmail.com</p>
                     </div>
                   </div>
                   
@@ -621,7 +689,7 @@ function App() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">Call Us</h3>
-                      <p className="text-gray-600">+1 (555) 123-4567</p>
+                      <p className="text-gray-600">+91 7980868293</p>
                       <p className="text-sm text-gray-500">Available 24/7</p>
                     </div>
                   </div>
@@ -652,7 +720,8 @@ function App() {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderPage = () => {
     let page;
@@ -809,8 +878,8 @@ function App() {
             
             <div>
               <h4 className="font-bold mb-4">Connect With Us</h4>
-              <p className="text-gray-400 mb-2">Email: support@assignnexus.com</p>
-              <p className="text-gray-400 mb-4">Phone: +1 (555) 123-4567</p>
+              <p className="text-gray-400 mb-2">Email: assignnexus@gmail.com</p>
+              <p className="text-gray-400 mb-4">Phone: +91 7980868293</p>
               <p className="text-sm text-gray-500">Available 24/7 for your support</p>
             </div>
           </div>
