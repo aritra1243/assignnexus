@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, CheckCircle, Clock, Shield, Award, Code, BarChart, DollarSign, Box, Smartphone, Globe, Calculator, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
+import { Menu, X, CheckCircle, Clock, Shield, Award, Terminal, BarChart3, Landmark, Cpu, TabletSmartphone, MonitorSmartphone, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -27,46 +27,52 @@ function App() {
 
   const services = [
     {
-      icon: <Code className="w-12 h-12" />,
+      icon: <Terminal className="w-8 h-8" />,
       title: "IT & Programming Assignments",
       description: "Expert support for Java, Python, C, C++, C# with debugging, API integration, and algorithm development.",
-      features: ["Logic Building", "Code Debugging", "OOP & Data Structures", "Mini & Final Year Projects"]
+      features: ["Logic Building", "Code Debugging", "OOP & Data Structures", "Mini & Final Year Projects"],
+      tools: ["Java", "Python", "C++", "C#"],
+      gradient: "from-blue-500 to-cyan-400"
     },
     {
-      icon: <BarChart className="w-12 h-12" />,
+      icon: <BarChart3 className="w-8 h-8" />,
       title: "Data Analysis & Statistical Tools",
       description: "Comprehensive statistical testing, visualization using R, SPSS, Jamovi, Orange, and KNIME.",
-      features: ["Hypothesis Testing", "ANOVA & Regression", "Data Cleaning", "Dashboard Creation"]
+      features: ["Hypothesis Testing", "ANOVA & Regression", "Data Cleaning", "Dashboard Creation"],
+      tools: ["R", "SPSS", "Jamovi", "KNIME"],
+      gradient: "from-emerald-500 to-teal-400"
     },
     {
-      icon: <DollarSign className="w-12 h-12" />,
+      icon: <Landmark className="w-8 h-8" />,
       title: "Finance & Accounting",
       description: "Professional help with financial statements, cost analysis, and investment portfolio reports.",
-      features: ["Financial Statements", "Risk Analysis", "Budgeting", "Excel & QuickBooks"]
+      features: ["Financial Statements", "Risk Analysis", "Budgeting", "Excel & QuickBooks"],
+      tools: ["Excel", "QuickBooks", "SAP", "Tally"],
+      gradient: "from-amber-500 to-orange-400"
     },
     {
-      icon: <Box className="w-12 h-12" />,
-      title: "CAD & 3D Modelling",
-      description: "Industry-grade design support using AutoCAD, Revit, Ansys, and CATIA for engineering projects.",
-      features: ["2D/3D Drawing", "Simulation", "Structural Analysis", "Mechanical Design"]
-    },
-    {
-      icon: <Smartphone className="w-12 h-12" />,
+      icon: <TabletSmartphone className="w-8 h-8" />,
       title: "App Development",
       description: "Build Android apps with Firebase, SQLite integration, and modern UI/UX design.",
-      features: ["Android Studio", "Database Integration", "UI/UX Design", "Firebase Setup"]
+      features: ["Android Studio", "Database Integration", "UI/UX Design", "Firebase Setup"],
+      tools: ["Android Studio", "Firebase", "Flutter", "SQLite"],
+      gradient: "from-violet-500 to-purple-400"
     },
     {
-      icon: <Globe className="w-12 h-12" />,
+      icon: <MonitorSmartphone className="w-8 h-8" />,
       title: "Web Development",
       description: "Full-stack development with MERN, MEAN, Django, and Spring Boot frameworks.",
-      features: ["Frontend Design", "REST API", "Full-Stack Projects", "Portfolio Building"]
+      features: ["Frontend Design", "REST API", "Full-Stack Projects", "Portfolio Building"],
+      tools: ["React", "Node.js", "Django", "Spring Boot"],
+      gradient: "from-pink-500 to-rose-400"
     },
     {
-      icon: <Calculator className="w-12 h-12" />,
+      icon: <Cpu className="w-8 h-8" />,
       title: "MATLAB Projects",
       description: "Advanced simulations for signal processing, control systems, and numerical computation.",
-      features: ["Signal Processing", "Control Systems", "Optimization", "Machine Learning"]
+      features: ["Signal Processing", "Control Systems", "Optimization", "Machine Learning"],
+      tools: ["MATLAB", "Simulink", "Octave"],
+      gradient: "from-indigo-500 to-blue-400"
     }
   ];
 
@@ -112,7 +118,7 @@ function App() {
               { icon: <CheckCircle />, title: "Quality Guaranteed", desc: "Expert-reviewed submissions" },
               { icon: <Award />, title: "Timely Delivery", desc: "Meet your deadlines, always" }
             ].map((item, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2 text-center animate-fadeIn" style={{animationDelay: `${idx * 0.1}s`}}>
+              <div key={idx} className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 text-center">
                 <div className="text-indigo-600 mb-4 flex justify-center">{React.cloneElement(item.icon, { className: "w-16 h-16" })}</div>
                 <h3 className="text-xl font-bold mb-2 text-gray-800">{item.title}</h3>
                 <p className="text-gray-600">{item.desc}</p>
@@ -148,18 +154,33 @@ function App() {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, idx) => (
-            <div key={idx} className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all p-8 transform hover:-translate-y-2 animate-slideUp" style={{animationDelay: `${idx * 0.1}s`}}>
-              <div className="text-indigo-600 mb-4">{service.icon}</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-800">{service.title}</h3>
-              <p className="text-gray-600 mb-4">{service.description}</p>
-              <ul className="space-y-2">
-                {service.features.map((feature, i) => (
-                  <li key={i} className="flex items-start text-gray-700">
-                    <ChevronRight className="w-5 h-5 text-indigo-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+            <div key={idx} className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2">
+              {/* Gradient accent bar */}
+              <div className={`h-1.5 bg-gradient-to-r ${service.gradient}`}></div>
+              <div className="p-8">
+                {/* Icon with colored background */}
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.gradient} flex items-center justify-center text-white mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  {service.icon}
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-gray-800">{service.title}</h3>
+                <p className="text-gray-600 mb-4">{service.description}</p>
+                {/* Software tool badges */}
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {service.tools.map((tool, i) => (
+                    <span key={i} className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${service.gradient} text-white shadow-sm`}>
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+                <ul className="space-y-2">
+                  {service.features.map((feature, i) => (
+                    <li key={i} className="flex items-start text-gray-700">
+                      <ChevronRight className="w-5 h-5 text-indigo-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           ))}
         </div>
@@ -634,17 +655,19 @@ function App() {
   );
 
   const renderPage = () => {
+    let page;
     switch(currentPage) {
-      case 'home': return <HomePage />;
-      case 'services': return <ServicesPage />;
-      case 'about': return <AboutPage />;
-      case 'terms': return <TermsPage />;
-      case 'privacy': return <PrivacyPage />;
-      case 'refund': return <RefundPage />;
-      case 'deadline': return <DeadlinePage />;
-      case 'contact': return <ContactPage />;
-      default: return <HomePage />;
+      case 'home': page = <HomePage />; break;
+      case 'services': page = <ServicesPage />; break;
+      case 'about': page = <AboutPage />; break;
+      case 'terms': page = <TermsPage />; break;
+      case 'privacy': page = <PrivacyPage />; break;
+      case 'refund': page = <RefundPage />; break;
+      case 'deadline': page = <DeadlinePage />; break;
+      case 'contact': page = <ContactPage />; break;
+      default: page = <HomePage />;
     }
+    return <div key={currentPage}>{page}</div>;
   };
 
   return (
@@ -665,10 +688,10 @@ function App() {
           }
         }
         .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out;
+          animation: fadeIn 0.5s ease-out forwards;
         }
         .animate-slideUp {
-          animation: slideUp 0.8s ease-out;
+          animation: slideUp 0.6s ease-out forwards;
         }
       `}</style>
 
