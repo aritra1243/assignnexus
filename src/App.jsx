@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, CheckCircle, Clock, Shield, Award, Terminal, BarChart3, Landmark, Cpu, TabletSmartphone, MonitorSmartphone, ChevronRight, Mail, Phone, MapPin } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Menu, X, CheckCircle, Clock, Shield, Award, Terminal, BarChart3, Landmark, Cpu, TabletSmartphone, MonitorSmartphone, ChevronRight, ChevronDown, Mail, Phone, MapPin, LogIn, UserPlus, LogOut, LayoutDashboard } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import { useSocket } from './context/SocketContext';
+import NotificationBell from './components/NotificationBell';
+import SignInPage from './pages/SignInPage';
+import SignUpPage from './pages/SignUpPage';
+import AdminDashboard from './pages/AdminDashboard';
+import UserDashboard from './pages/UserDashboard';
 
 function App() {
+  const { user, loading, logout, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [policiesOpen, setPoliciesOpen] = useState(false);
+  const policiesRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,15 +24,50 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navigation = [
+  // Handle Google OAuth redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('token')) {
+      setCurrentPage('signin');
+    }
+  }, []);
+
+  // Auto-redirect to dashboard when user logs in
+  useEffect(() => {
+    if (user && (currentPage === 'signin' || currentPage === 'signup')) {
+      setCurrentPage('dashboard');
+    }
+  }, [user]);
+
+  // Close policies dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (policiesRef.current && !policiesRef.current.contains(e.target)) {
+        setPoliciesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const mainNavigation = [
     { name: 'Home', id: 'home' },
     { name: 'Services', id: 'services' },
     { name: 'About Us', id: 'about' },
+    { name: 'Contact us', id: 'contact' }
+  ];
+
+  const policyLinks = [
     { name: 'Terms & Conditions', id: 'terms' },
     { name: 'Privacy & Security', id: 'privacy' },
     { name: 'Refund Policy', id: 'refund' },
-    { name: 'Deadline Policy', id: 'deadline' },
-    { name: 'Contact us', id: 'contact' }
+    { name: 'Deadline Policy', id: 'deadline' }
+  ];
+
+  // Combined for mobile menu
+  const navigation = [
+    ...mainNavigation,
+    ...policyLinks
   ];
 
   const services = [
@@ -155,16 +200,13 @@ function App() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, idx) => (
             <div key={idx} className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2">
-              {/* Gradient accent bar */}
               <div className={`h-1.5 bg-gradient-to-r ${service.gradient}`}></div>
               <div className="p-8">
-                {/* Icon with colored background */}
                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.gradient} flex items-center justify-center text-white mb-5 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                   {service.icon}
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-gray-800">{service.title}</h3>
                 <p className="text-gray-600 mb-4">{service.description}</p>
-                {/* Software tool badges */}
                 <div className="flex flex-wrap gap-2 mb-5">
                   {service.tools.map((tool, i) => (
                     <span key={i} className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${service.gradient} text-white shadow-sm`}>
@@ -546,7 +588,7 @@ function App() {
 
   const ContactPage = () => {
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
-    const [formStatus, setFormStatus] = useState('idle'); // idle, sending, success, error
+    const [formStatus, setFormStatus] = useState('idle');
 
     const handleChange = (e) => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -592,7 +634,6 @@ function App() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Contact Form */}
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">Send us a Message</h2>
 
@@ -612,11 +653,7 @@ function App() {
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">Name</label>
                   <input 
-                    type="text" 
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
+                    type="text" name="name" value={formData.name} onChange={handleChange} required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Your full name"
                   />
@@ -624,11 +661,7 @@ function App() {
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">Email</label>
                   <input 
-                    type="email" 
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
+                    type="email" name="email" value={formData.email} onChange={handleChange} required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="your@email.com"
                   />
@@ -636,11 +669,7 @@ function App() {
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">Subject</label>
                   <input 
-                    type="text" 
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
+                    type="text" name="subject" value={formData.subject} onChange={handleChange} required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="What is this regarding?"
                   />
@@ -648,18 +677,13 @@ function App() {
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">Message</label>
                   <textarea 
-                    rows="4" 
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
+                    rows="4" name="message" value={formData.message} onChange={handleChange} required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Tell us how we can help..."
                   ></textarea>
                 </div>
                 <button 
-                  type="submit"
-                  disabled={formStatus === 'sending'}
+                  type="submit" disabled={formStatus === 'sending'}
                   className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {formStatus === 'sending' ? 'Sending...' : 'Send Message'}
@@ -667,37 +691,28 @@ function App() {
               </form>
             </div>
 
-            {/* Contact Information */}
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-lg p-8">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Get in Touch</h2>
                 <div className="space-y-6">
                   <div className="flex items-start">
-                    <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                      <Mail className="w-6 h-6 text-indigo-600" />
-                    </div>
+                    <div className="bg-indigo-100 p-3 rounded-lg mr-4"><Mail className="w-6 h-6 text-indigo-600" /></div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">Email Us</h3>
                       <p className="text-gray-600">assignnexus@gmail.com</p>
                       <p className="text-gray-600">info.assignnexus@gmail.com</p>
                     </div>
                   </div>
-                  
                   <div className="flex items-start">
-                    <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                      <Phone className="w-6 h-6 text-indigo-600" />
-                    </div>
+                    <div className="bg-indigo-100 p-3 rounded-lg mr-4"><Phone className="w-6 h-6 text-indigo-600" /></div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">Call Us</h3>
                       <p className="text-gray-600">+91 7980868293</p>
                       <p className="text-sm text-gray-500">Available 24/7</p>
                     </div>
                   </div>
-                  
                   <div className="flex items-start">
-                    <div className="bg-indigo-100 p-3 rounded-lg mr-4">
-                      <MapPin className="w-6 h-6 text-indigo-600" />
-                    </div>
+                    <div className="bg-indigo-100 p-3 rounded-lg mr-4"><MapPin className="w-6 h-6 text-indigo-600" /></div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">Location</h3>
                       <p className="text-gray-600">Global Support</p>
@@ -734,10 +749,34 @@ function App() {
       case 'refund': page = <RefundPage />; break;
       case 'deadline': page = <DeadlinePage />; break;
       case 'contact': page = <ContactPage />; break;
+      case 'signin': page = <SignInPage onNavigate={setCurrentPage} />; break;
+      case 'signup': page = <SignUpPage onNavigate={setCurrentPage} />; break;
+      case 'dashboard':
+        page = isAdmin ? <AdminDashboard /> : <UserDashboard />;
+        break;
       default: page = <HomePage />;
     }
     return <div key={currentPage}>{page}</div>;
   };
+
+  const handleLogout = () => {
+    logout();
+    setCurrentPage('home');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+        <div className="text-center">
+          <svg className="animate-spin w-12 h-12 text-indigo-600 mx-auto mb-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <p className="text-gray-500 font-medium">Loading AssignNexus...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -778,11 +817,11 @@ function App() {
 
             {/* Desktop Menu */}
             <div className="hidden lg:flex items-center space-x-1">
-              {navigation.map((item) => (
+              {mainNavigation.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setCurrentPage(item.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`px-3 py-2 rounded-lg font-medium text-sm transition-all ${
                     currentPage === item.id
                       ? 'bg-indigo-600 text-white'
                       : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
@@ -791,6 +830,91 @@ function App() {
                   {item.name}
                 </button>
               ))}
+              {/* Policies Dropdown */}
+              <div className="relative" ref={policiesRef}>
+                <button
+                  onClick={() => setPoliciesOpen(!policiesOpen)}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg font-medium text-sm transition-all ${
+                    ['terms','privacy','refund','deadline'].includes(currentPage)
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
+                  }`}
+                >
+                  Policies
+                  <ChevronDown className={`w-4 h-4 transition-transform ${policiesOpen ? 'rotate-180' : ''}`} />
+                </button>
+                {policiesOpen && (
+                  <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-fadeIn">
+                    {policyLinks.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => { setCurrentPage(item.id); setPoliciesOpen(false); }}
+                        className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-all ${
+                          currentPage === item.id
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+                        }`}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Auth Buttons (Desktop) */}
+            <div className="hidden lg:flex items-center space-x-3">
+              {user ? (
+                <>
+                  <NotificationBell />
+                  <button
+                    onClick={() => setCurrentPage('dashboard')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                      currentPage === 'dashboard'
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-600'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard
+                  </button>
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white text-xs font-bold">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        user.name?.charAt(0)?.toUpperCase()
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">{user.name}</span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1.5 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium transition-all text-sm"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setCurrentPage('signin')}
+                    className="flex items-center gap-2 px-5 py-2.5 text-indigo-600 border-2 border-indigo-600 rounded-xl font-semibold hover:bg-indigo-600 hover:text-white transition-all duration-200 text-sm"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage('signup')}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -821,6 +945,51 @@ function App() {
                   {item.name}
                 </button>
               ))}
+              
+              {/* Mobile Auth */}
+              <div className="border-t border-gray-200 mt-3 pt-3 space-y-2">
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-4 py-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white text-sm font-bold">
+                        {user.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                      <span className="font-medium text-gray-700">{user.name}</span>
+                    </div>
+                    <button
+                      onClick={() => { setCurrentPage('dashboard'); setMobileMenuOpen(false); }}
+                      className="block w-full text-left px-4 py-3 rounded-lg font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+                    >
+                      <LayoutDashboard className="w-4 h-4 inline mr-2" />
+                      Dashboard
+                    </button>
+                    <button
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                      className="block w-full text-left px-4 py-3 rounded-lg font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4 inline mr-2" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { setCurrentPage('signin'); setMobileMenuOpen(false); }}
+                      className="block w-full text-left px-4 py-3 rounded-lg font-medium text-indigo-600 hover:bg-indigo-50"
+                    >
+                      <LogIn className="w-4 h-4 inline mr-2" />
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => { setCurrentPage('signup'); setMobileMenuOpen(false); }}
+                      className="block w-full text-left px-4 py-3 rounded-lg font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+                    >
+                      <UserPlus className="w-4 h-4 inline mr-2" />
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>
